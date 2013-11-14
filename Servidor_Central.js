@@ -46,9 +46,77 @@ io.sockets.on('connection', function (socket) {
 		console.log("El usuario: " + socket.id + " ha invitado al usuario " + socketDestino.id + " a un juego");
 
 		//socketDestino.emit('confirmarInvitacion',{origen: socket});
-		io.sockets.socket(socketDestino.id).emit('confirmarInvitacion',{origen: socket.id});
+		io.sockets.socket(socketDestino.id).emit('confirmarInvitacion',{origen: socket.id, destino:socketDestino.id});
+	});
+
+	socket.on('armarPartida',function(datos){
+
+		console.log ("Se armará una partida entre " + datos.origen + " y " +  datos.destino);
+		var aux_carga = cargaServidores[0];
+		var aux_servidor=0;
+		for (var i=0;i<cargaServidores.length;i++)
+			{ 
+			if (cargaServidores[i]< aux_carga) {
+
+				aux_carga = cargaServidores[i];
+				aux_servidor =i;
+			};
+
+			}
+
+		var servidorDestino = servidoresConectados[aux_servidor];
+
+		servidorDestino.write(
+
+			JSON.stringify(
+
+				{ opcion:0, jugador1: datos.origen, jugador2: datos.destino}
+				)
+			); 
+
 	});
 
 });
 
 
+///////////////////////////////////////////////////////////
+//COMUICACIÓN CON SERVIDORES DE PARTIDA NODEJS/////
+
+const net = require("net");
+var servidoresConectados = new Array();
+var cargaServidores = new Array();
+
+var server = net.createServer(function (client) {
+    
+    servidoresConectados.push(client);
+
+    console.log("Se ha conectado un servidor de juegos");  
+
+    client.on('data', function(data) {    //client de algun lado aparece.... pero se debe referir al servidor xD
+        client.write( // Le envío un mensaje a otro servidor
+          JSON.stringify(
+              { opcion:1, contadorLocal: contadorLocal, contadorGlobal: contadorGlobal }
+          )
+        );
+        if(contadorLocal%10==0){
+          console.log("el usuario "+id+", contador global: "+contadorGlobal+" contador local: "+contadorLocal);
+        }
+        contadorGlobal++;
+        contadorLocal++;   
+
+    });
+    
+    client.write(
+      JSON.stringify(
+          { opcion:0}
+      )
+    );
+    server.on('error', function(err){
+        console.log("Error: "+err)
+    });
+});
+
+// Listen for connections
+server.listen(61337, "localhost", function () {
+    console.log("Servidor creado");
+});

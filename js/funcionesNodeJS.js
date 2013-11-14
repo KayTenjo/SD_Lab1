@@ -29,12 +29,13 @@ try {
 		if (respuesta == true)
 		  {
 		  alert("Acepte yey");
+		  socket.emit('armarPartida',{origen: datos.origen, destino: datos.destino});
 		  }
 		else
 		  {
 		  alert("Rechaze >=D");
 		  }
-
+		  
 			});
 
 	/*socket.on('recibirSolicitudBatalla',function(datos){
