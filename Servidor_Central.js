@@ -6,6 +6,8 @@ console.log("Empezó a funcionar el Servidor Central de partidas");
 var usuariosConectados = new Array();
 var usuariosDisponibles = new Array();
 var socketsConectados = new Array();
+var usuariosJugando = new Array();
+
 
 io.sockets.on('connection', function (socket) {
 
@@ -18,6 +20,8 @@ io.sockets.on('connection', function (socket) {
 	socket.emit('mensajeDeBienvenida',{mensaje:"Bienvenido al servidor de juegos gato usuario: "+socket.id , idUsuario: socket.id});
 	// socket.emit envia el mensaje solamente a "socket", que vendría siendo el cliente conectado específico.
 	io.sockets.emit('actualizarListaUsuarios', {lista: usuariosConectados}); //io.sockets.emit manda a todos los clientes 
+
+	io.sockets.emit('actualizarListaUsuariosDisponibles', {lista: usuariosDisponibles}); 
 	//socket.confirm("holaholaohoal");
 	//Vamos a recibir la solicitud de enfrentamiento de un usuario.
 
@@ -34,10 +38,12 @@ io.sockets.on('connection', function (socket) {
 	    usuariosConectados.splice( usuariosConectados.indexOf( socket.id  ), 1);
 	    usuariosDisponibles.splice( usuariosDisponibles.indexOf( socket.id  ), 1);
 	    socketsConectados.splice( socketsConectados.indexOf( socket ), 1);
+	    usuariosJugando.splice( usuariosJugando.indexOf( socket.id  ), 1);
 
 	    io.sockets.emit('actualizarListaUsuarios', {lista: usuariosConectados});
+	    io.sockets.emit('actualizarListaUsuariosDisponibles', {lista: usuariosDisponibles}); 
+		io.sockets.emit('actualizarListaUsuariosJugando', {lista: usuariosJugando});
 
-		
 	});
 
 	socket.on('enviarInvitacion',function(datos){
@@ -52,6 +58,17 @@ io.sockets.on('connection', function (socket) {
 	socket.on('armarPartida',function(datos){
 
 		console.log ("Se armará una partida entre " + datos.origen + " y " +  datos.destino);
+
+		//Usuarios disponibles
+	    usuariosDisponibles.splice( usuariosDisponibles.indexOf( datos.origen  ), 1);	    
+	    usuariosDisponibles.splice( usuariosDisponibles.indexOf( datos.destino  ), 1);
+	    io.sockets.emit('actualizarListaUsuariosDisponibles', {lista: usuariosDisponibles}); 
+
+	    //Usuarios jugando		
+		usuariosJugando.push(datos.origen);
+		usuariosJugando.push(datos.destino);
+		io.sockets.emit('actualizarListaUsuariosJugando', {lista: usuariosJugando});
+
 		var aux_carga = cargaServidores[0];
 		var aux_servidor=0;
 		for (var i=0;i<cargaServidores.length;i++)
@@ -66,13 +83,13 @@ io.sockets.on('connection', function (socket) {
 
 		var servidorDestino = servidoresConectados[aux_servidor];
 
-		servidorDestino.write(
+		/*servidorDestino.write(
 
 			JSON.stringify(
 
 				{ opcion:0, jugador1: datos.origen, jugador2: datos.destino}
-				)
-			); 
+			)
+		); */
 
 	});
 

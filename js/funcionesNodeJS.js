@@ -18,9 +18,23 @@ try {
 
 	socket.on('actualizarListaUsuarios',function(datos){
 		
-		var listaString = datos.lista.join();
+		var listaString = datos.lista.join("<br>");
 		document.getElementById("listaUsuarios").innerHTML=listaString;
 		
+	});
+
+	socket.on('actualizarListaUsuariosDisponibles',function(datos){
+	
+		var listaDisponibles = datos.lista.join("<br>");
+		document.getElementById("usuariosDisponibles").innerHTML=listaDisponibles;
+	
+	});
+
+	socket.on('actualizarListaUsuariosJugando',function(datos){
+	
+		var listaJugando = datos.lista.join("<br>");
+		document.getElementById("usuariosJugando").innerHTML=listaJugando;
+	
 	});
 
 	socket.on('confirmarInvitacion',function(datos){
@@ -36,7 +50,7 @@ try {
 		  alert("Rechaze >=D");
 		  }
 		  
-			});
+	});
 
 	/*socket.on('recibirSolicitudBatalla',function(datos){
 
