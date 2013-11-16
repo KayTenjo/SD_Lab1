@@ -1,8 +1,10 @@
-//
 
-var servidorNode = 'http://127.0.0.1'; //IP del servidro, debiese ser dinámica para la entrega final
+
+var servidorNode ='http://127.0.0.1'; //IP del servidro, debiese ser dinámica para la entrega final
 var puerto = 8008; //puerto del servidor Node 
 var socket; //En esta variable se guarda la conexión
+var socketPartida; //Aqui se guardara la conexión con el servidor de partidas asignado
+var miTurno=false;
 
 try {
 
@@ -52,14 +54,34 @@ try {
 		  
 	});
 
-	/*socket.on('recibirSolicitudBatalla',function(datos){
+	socket.on('conectarConServidorPartida', function(datos){
 
-		var destino = datos.destino;
+		alert("llegue aqui yey");
+		var puertoServidor = datos.puerto;
+		socketPartida = io.connect(servidorNode + ':' + puertoServidor + '/');
 
-		if (confirm('Are you sure you want to save this thing into the database?')){
+	});
 
-		}
-	}): */
+	socket.on('comenzarPartida1',function(datos){
+
+		miTurno = true;
+		document.getElementById("idRival").innerHTML = datos.oponente;
+		document.getElementById("turno").innerHTML = "Estás en tu turno";
+	});
+
+	socket.on('comenzarPartida2',function(datos){
+
+		miTurno = false;
+		document.getElementById("idRival").innerHTML = datos.oponente;
+		document.getElementById("turno").innerHTML = "Es el turno oponente";
+	});
+
+	socket.on('miTurno',function(datos){
+
+		miTurno = true;
+		document.getElementById("turno").innerHTML = "Estás en tu turno";
+
+	});
 
 }
 
@@ -77,3 +99,16 @@ function enviarInvitacion(){
 
 	socket.emit('enviarInvitacion',{destino: destino});
 }
+
+function siguienteTurno(){
+
+	if (miTurno) {
+
+		var oponente = document.getElementById("idRival").value;
+		document.getElementById("turno").innerHTML = "Es el turno oponente";
+		miTurno =false;
+		socket.emit('siguienteTurno',{oponente:oponente});
+	}
+	
+}
+

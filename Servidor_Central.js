@@ -82,6 +82,13 @@ io.sockets.on('connection', function (socket) {
 			}
 
 		var servidorDestino = servidoresConectados[aux_servidor];
+		var puertoDestino = puertosServidores[aux_servidor];
+
+		console.log("voy a conectarme al puerto " + puertoDestino);
+		
+
+		io.sockets.socket(datos.origen).emit('conectarConServidorPartida',{puerto:puertoDestino });
+		io.sockets.socket(datos.destino).emit('conectarConServidorPartida',{puerto:puertoDestino});
 
 		/*servidorDestino.write(
 
@@ -91,7 +98,12 @@ io.sockets.on('connection', function (socket) {
 			)
 		); */
 
+
+
+
 	});
+
+
 
 });
 
@@ -102,6 +114,9 @@ io.sockets.on('connection', function (socket) {
 const net = require("net");
 var servidoresConectados = new Array();
 var cargaServidores = new Array();
+var puertosServidores = new Array();
+
+puertosServidores.push(8007);
 
 var server = net.createServer(function (client) {
     
@@ -110,24 +125,10 @@ var server = net.createServer(function (client) {
     console.log("Se ha conectado un servidor de juegos");  
 
     client.on('data', function(data) {    //client de algun lado aparece.... pero se debe referir al servidor xD
-        client.write( // Le envío un mensaje a otro servidor
-          JSON.stringify(
-              { opcion:1, contadorLocal: contadorLocal, contadorGlobal: contadorGlobal }
-          )
-        );
-        if(contadorLocal%10==0){
-          console.log("el usuario "+id+", contador global: "+contadorGlobal+" contador local: "+contadorLocal);
-        }
-        contadorGlobal++;
-        contadorLocal++;   
-
+     
     });
     
-    client.write(
-      JSON.stringify(
-          { opcion:0}
-      )
-    );
+  
     server.on('error', function(err){
         console.log("Error: "+err)
     });
